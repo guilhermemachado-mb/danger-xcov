@@ -69,8 +69,7 @@ module Danger
         report_json = manager.parse_xccoverage
       end
 
-      # Map and process report
-      process_report(Xcov::Report.map(report_json))
+      Xcov::Report.map(report_json)
     end
 
     # Outputs a processed report with Danger
@@ -88,6 +87,12 @@ module Danger
       end
     end
 
+    def simple_report(report)
+      report_markdown = report.markdown_value
+      
+      markdown(report_markdown)
+    end
+
     # Aux methods
 
     # Checks whether xcov is available
@@ -96,9 +101,7 @@ module Danger
     end
 
     # Filters the files that haven't been modified in the current PR
-    def process_report(report)
-      file_names = @dangerfile.git.modified_files.map { |file| File.expand_path(file) }
-      file_names += @dangerfile.git.added_files.map { |file| File.expand_path(file) }
+    def process_report(report, file_names)
       report.targets.each do |target|
         target.files = target.files.select { |file| file_names.include?(file.location) }
       end
@@ -113,7 +116,7 @@ module Danger
       converted_options
     end
 
-    private :xcov_available?, :process_report
+    private :xcov_available?
 
   end
 end
